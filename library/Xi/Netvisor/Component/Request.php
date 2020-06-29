@@ -3,7 +3,7 @@
 namespace Xi\Netvisor\Component;
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Message\ResponseInterface;
 use Xi\Netvisor\Exception\NetvisorException;
 use Xi\Netvisor\Config;
 
@@ -34,13 +34,14 @@ class Request
         $url = $this->createUrl($service, $params);
         $headers = $this->createHeaders($url);
 
-        $response = $this->client->request(
+        $request = $this->client->createRequest(
             'GET',
             $url,
             [
                 'headers' => $headers,
             ]
         );
+        $response = $this->client->send($request);
 
         if ($this->hasRequestFailed($response)) {
             throw new NetvisorException((string)$response->getBody());
@@ -64,7 +65,7 @@ class Request
         $url     = $this->createUrl($service, $params);
         $headers = $this->createHeaders($url);
 
-        $response = $this->client->request(
+        $request = $this->client->createRequest(
             'POST',
             $url,
             [
@@ -72,6 +73,7 @@ class Request
                 'body' => $xml,
             ]
         );
+        $response = $this->client->send($request);
 
         if ($this->hasRequestFailed($response)) {
             throw new NetvisorException((string)$response->getBody());
@@ -121,7 +123,7 @@ class Request
     }
 
     /**
-     * @param  Response $response
+     * @param  ResponseInterface $response
      * @return boolean
      */
     private function hasRequestFailed($response)
